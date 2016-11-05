@@ -1,0 +1,35 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<div class="g-recaptcha" data-sitekey="@System.Configuration.ConfigurationManager.AppSettings["Google.ReCaptcha.Site.Key"]"></div>
+
+<button id="buttonPostback">Postback</button>
+
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<script src="~/scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#buttonPostback').click(
+            function () {
+                $.post(
+                    "api/captchaverify",
+                    { Response: document.querySelector('#g-recaptcha-response').value },
+                    function (data, status) {
+                        console.log(status);
+                        console.log(data);
+                        if (status === 'success') {
+                            if (data.Success === true) {
+                                $('div.g-recaptcha').attr('data-sitekey', '')
+                                $('div.g-recaptcha').html('Successfully passed recaptcha!!')
+                            }
+                        }
+                    }
+                );
+            });
+    });
+
+</script>
