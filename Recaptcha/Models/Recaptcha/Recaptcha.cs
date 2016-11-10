@@ -1,31 +1,49 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Configuration;
+using System.Diagnostics;
 
-namespace Recaptcha.Models.ReCaptcha
+namespace Recaptcha.Models.Recaptcha
 {
 
-    public class ReCaptcha
+    public class ReCaptcha : IReCaptcha
     {
-        public bool Success { get; set; }
-        public List<string> ErrorCodes { get; set; }
-        public string Response { get; set; }
+        public string SiteKey { get; set; }
+        public string SiteSecret { get; set; }
+        public string ScriptUrl { get; set; }
+        public string VerifyUrl { get; set; }
 
-        public static ReCaptcha Validate(string encodedResponse, string ip)
+        public ReCaptcha(bool useTestKey = false)
         {
-            if (string.IsNullOrEmpty(encodedResponse)) return new ReCaptcha();
+            if (useTestKey)
+            {
+                SiteKey = ConfigurationManager.AppSettings["Google.ReCaptcha.Test.Site.Key"];
+                SiteSecret = ConfigurationManager.AppSettings["Google.ReCaptcha.Test.Secret"];
+            }
+            else
+            {
+                SiteKey = ConfigurationManager.AppSettings["Google.ReCaptcha.Site.Key"];
+                SiteSecret = ConfigurationManager.AppSettings["Google.ReCaptcha.Secret"];
+            }
+            ScriptUrl = ConfigurationManager.AppSettings["Google.ReCaptcha.Script.Url"];
+            VerifyUrl = ConfigurationManager.AppSettings["Google.ReCaptcha.Verify.Url"];
+        }
+
+        public ReCaptchaVerifyResponse Validate(string encodedResponse, string clientIp)
+        {
+            if (string.IsNullOrEmpty(encodedResponse) || string.IsNullOrEmpty(SiteSecret))
+            {
+                return new ReCaptchaVerifyResponse();
+            }
 
             var client = new System.Net.WebClient();
-            var secret = ConfigurationManager.AppSettings["Google.ReCaptcha.Secret"];
-
-            if (string.IsNullOrEmpty(secret)) return new ReCaptcha();
-
-            var googleReply = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}&remoteip{2}", secret, encodedResponse, ip));
+            var googleReply = client.DownloadString(string.Format(VerifyUrl, SiteSecret, encodedResponse, clientIp));
+            googleReply = googleReply.Replace("error-codes", "errorcodes");
+            Debug.WriteLine(googleReply);
 
             var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
 
-            var reCaptcha = serializer.Deserialize<ReCaptcha>(googleReply);
+            var reCaptchaVerifyResponse = serializer.Deserialize<ReCaptchaVerifyResponse>(googleReply);
 
-            return reCaptcha;
+            return reCaptchaVerifyResponse;
         }
     }
 }

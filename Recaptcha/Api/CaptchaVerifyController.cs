@@ -1,9 +1,5 @@
-﻿using Recaptcha.Models.ReCaptcha;
-using System;
+﻿using Recaptcha.Models.Recaptcha;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 
@@ -24,10 +20,10 @@ namespace Recaptcha.Api
         }
 
         // POST: api/CaptchaVerify
-        public ReCaptcha Post([FromBody] ReCaptcha requestParams)
+        public ReCaptchaVerifyResponse Post([FromBody] RecaptchaResponse requestParams)
         {
             var clientIp = HttpContext.Current.Request.UserHostAddress;
-            return ReCaptcha.Validate(requestParams.Response, clientIp);
+            return new ReCaptcha().Validate(requestParams.Response, clientIp);
         }
 
         // PUT: api/CaptchaVerify/5

@@ -1,15 +1,17 @@
-﻿
+﻿@using Recaptcha.Models.Recaptcha;
 @{
-    ViewBag.Title = "Index";
+    var recaptcha = new ReCaptcha();
+    var googleSiteKey = recaptcha.SiteKey;
+    var googleScriptUrl = recaptcha.ScriptUrl;
 }
 
 <h2>Index</h2>
 
-<div class="g-recaptcha" data-sitekey="@System.Configuration.ConfigurationManager.AppSettings["Google.ReCaptcha.Site.Key"]"></div>
+<div class="g-recaptcha" data-sitekey="@googleSiteKey"></div>
 
 <button id="buttonPostback">Postback</button>
 
-<script src='https://www.google.com/recaptcha/api.js'></script>
+<script src='@googleScriptUrl'></script>
 <script src="~/scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     $(function () {
